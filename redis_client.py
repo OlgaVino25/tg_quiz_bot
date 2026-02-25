@@ -1,0 +1,21 @@
+import redis
+from settings import REDIS_HOST, REDIS_PORT, REDIS_DB
+
+
+r = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_DB,
+    decode_responses=True,
+)
+
+
+def get_random_question_id():
+    """Возвращает случайный ID вопроса из множества question_ids"""
+    return r.srandmember("question_ids")
+
+
+def get_question_by_id(q_id):
+    """Возвращает кортеж (вопрос, ответ) по ID"""
+    data = r.hgetall(f"question:{q_id}")
+    return data.get("question"), data.get("answer")

@@ -1,22 +1,22 @@
 import os
 import sys
-import logging
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-import functools
 import asyncio
 from aiogram import Bot, Dispatcher
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.storage.memory import MemoryStorage
 
-from settings import (
-    TG_TOKEN,
-    ADMIN_CHAT_ID,
-)
-import tg_handlers as tg_h
+
+from settings import TG_TOKEN, ADMIN_CHAT_ID
+from bot_tg import handlers as tg_h
+from bot_tg.states import QuizStates
 from logger import setup_logging
+
+import logging
 
 
 logger = logging.getLogger(__name__)
@@ -36,11 +36,23 @@ async def main():
     )
 
     bot = Bot(token=TG_TOKEN)
-    dp = Dispatcher()
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
 
     dp.message.register(tg_h.start, Command(commands=["start"]))
+    dp.message.register(tg_h.start, lambda msg: msg.text == "start")
+
+    dp.message.register(
+        tg_h.new_question,
+        lambda msg: msg.text == "Новый вопрос",
+        StateFilter(QuizStates.CHOOSING),
+    )
+    dp.message.register(tg_h.give_up, lambda msg: msg.text == "Сдаться")
+    dp.message.register(tg_h.my_account, lambda msg: msg.text == "Мой счёт")
+
+    dp.message.register(tg_h.handle_answer, StateFilter(QuizStates.ANSWERING))
+
     dp.message.register(tg_h.echo)
-    dp.message.register(functools.partial(handle_user_message_with_error_handling))
     try:
         await dp.start_polling(bot)
     except Exception as e:

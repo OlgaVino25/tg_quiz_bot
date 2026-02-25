@@ -1,6 +1,7 @@
 # Quiz Bot — Telegram и ВКонтакте
 
 Этот проект представляет собой двух ботов для викторин, работающих на одной базе вопросов. Боты задают случайные вопросы из истории, культуры и других областей, проверяют ответы и ведут счёт пользователей. Вопросы хранятся в Redis, что обеспечивает быстрый доступ и экономию памяти.
+
 [@QuizMaster777Bot](https://t.me/QuizMaster777Bot) и [ВКонтакте](https://vk.com/club234376389)
 
 ![Video Project 4](https://github.com/user-attachments/assets/85316c0c-4f97-4873-b966-8c9ecd529bf4)                                 ![Video Project 7](https://github.com/user-attachments/assets/217c6581-2b3d-44fd-b29f-0e7975aff0eb)

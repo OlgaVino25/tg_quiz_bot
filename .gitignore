@@ -78,7 +78,5 @@ Thumbs.db
 *.sqlite3
 
 /questions/
-generate_json.py
-question.py
 questions.json
 test_redis.py

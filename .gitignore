@@ -80,4 +80,5 @@ Thumbs.db
 /questions/
 generate_json.py
 question.py
+questions.json
 test_redis.py

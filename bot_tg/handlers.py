@@ -13,21 +13,13 @@ from aiogram.fsm.context import FSMContext
 from bot_tg.keyboards import get_main_menu_keyboard
 from redis_client import r, get_random_question_id, get_question_by_id
 from bot_tg.states import QuizStates
+from quiz_utils import normalize_answer
 
 logger = logging.getLogger(__name__)
 
 
-def normalize_answer(answer: str) -> str:
-    """Приводит ответ к нормальной форме для сравнения."""
-    answer = re.sub(r"\([^)]*\)", "", answer)
-    if "." in answer:
-        answer = answer.split(".")[0]
-
-    answer = re.sub(r"[\'\"«»]", "", answer)
-    return answer.strip().lower()
-
-
 async def start(message: types.Message, state: FSMContext):
+    """Обрабатывает команду /start и кнопку start, устанавливает состояние CHOOSING."""
     await state.set_state(QuizStates.CHOOSING)
     await message.answer(
         "Здравствуйте! Я бот для викторин!", reply_markup=get_main_menu_keyboard()
@@ -35,6 +27,7 @@ async def start(message: types.Message, state: FSMContext):
 
 
 async def new_question(message: types.Message, state: FSMContext):
+    """Отправляет случайный вопрос пользователю и переводит в состояние ANSWERING."""
     user_id = message.from_user.id
     q_id = get_random_question_id()
     if not q_id:
@@ -53,6 +46,7 @@ async def new_question(message: types.Message, state: FSMContext):
 
 
 async def give_up(message: types.Message, state: FSMContext):
+    """Показывает правильный ответ на текущий вопрос и отправляет новый вопрос."""
     user_id = message.from_user.id
     q_id = r.get(f"user:{user_id}:current_question_id")
     if q_id:
@@ -69,12 +63,14 @@ async def give_up(message: types.Message, state: FSMContext):
 
 
 async def my_account(message: types.Message, state: FSMContext):
+    """Показывает количество набранных очков."""
     user_id = message.from_user.id
     score = r.get(f"user:{user_id}:score") or 0
     await message.answer(f"Ваш счёт: {score} очков")
 
 
 async def handle_answer(message: types.Message, state: FSMContext):
+    """Проверяет ответ пользователя, обновляет счёт и переводит в CHOOSING при правильном ответе."""
     user_id = message.from_user.id
     q_id = r.get(f"user:{user_id}:current_question_id")
     if not q_id:
@@ -106,4 +102,5 @@ async def handle_answer(message: types.Message, state: FSMContext):
 
 
 async def echo(message: types.Message, state: FSMContext):
+    """Обработчик для нераспознанных сообщений."""
     await message.answer("Извините, я понимаю только команды из меню.")

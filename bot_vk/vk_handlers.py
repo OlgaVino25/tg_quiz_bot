@@ -10,6 +10,7 @@ from vk_api.utils import get_random_id
 
 from redis_client import r, get_random_question_id, get_question_by_id
 from bot_vk.keyboards import get_main_menu_keyboard
+from quiz_utils import normalize_answer
 
 
 logger = logging.getLogger(__name__)
@@ -18,14 +19,6 @@ logger = logging.getLogger(__name__)
 class VkStates:
     CHOOSING = "CHOOSING"
     ANSWERING = "ANSWERING"
-
-
-def normalize_answer(answer: str) -> str:
-    answer = re.sub(r"\([^)]*\)", "", answer)
-    if "." in answer:
-        answer = answer.split(".")[0]
-    answer = re.sub(r"[\'\"«»]", "", answer)
-    return answer.strip().lower()
 
 
 def get_state(user_id: int) -> str:
@@ -38,6 +31,7 @@ def set_state(user_id: int, state: str):
 
 
 def handle_start(event, vk_api):
+    """Обрабатывает команду /start и кнопку start, устанавливает состояние CHOOSING."""
     user_id = event.user_id
     set_state(user_id, VkStates.CHOOSING)
     vk_api.messages.send(
@@ -49,6 +43,7 @@ def handle_start(event, vk_api):
 
 
 def handle_new_question(event, vk_api):
+    """Отправляет случайный вопрос пользователю и переводит в состояние ANSWERING."""
     user_id = event.user_id
     q_id = get_random_question_id()
     if not q_id:
@@ -80,6 +75,7 @@ def handle_new_question(event, vk_api):
 
 
 def handle_give_up(event, vk_api):
+    """Показывает правильный ответ на текущий вопрос и отправляет новый вопрос."""
     user_id = event.user_id
     q_id = r.get(f"vk_user:{user_id}:current_question_id")
     if q_id:
@@ -107,6 +103,7 @@ def handle_give_up(event, vk_api):
 
 
 def handle_my_account(event, vk_api):
+    """Показывает количество набранных очков."""
     user_id = event.user_id
     score = r.get(f"vk_user:{user_id}:score") or 0
     vk_api.messages.send(
@@ -118,6 +115,7 @@ def handle_my_account(event, vk_api):
 
 
 def handle_answer(event, vk_api):
+    """Проверяет ответ пользователя, обновляет счёт и переводит в CHOOSING при правильном ответе."""
     user_id = event.user_id
     q_id = r.get(f"vk_user:{user_id}:current_question_id")
     if not q_id:
@@ -167,6 +165,7 @@ def handle_answer(event, vk_api):
 
 
 def handle_fallback(event, vk_api):
+    """Обработчик для нераспознанных сообщений."""
     vk_api.messages.send(
         peer_id=event.peer_id,
         random_id=get_random_id(),

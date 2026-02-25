@@ -11,11 +11,13 @@ r = redis.Redis(
 
 
 def get_random_question_id():
-    """Возвращает случайный ID вопроса из множества question_ids"""
+    """Возвращает случайный ID вопроса из множества question_ids  в Redis."""
     return r.srandmember("question_ids")
 
 
 def get_question_by_id(q_id):
-    """Возвращает кортеж (вопрос, ответ) по ID"""
+    """Возвращает кортеж (вопрос, ответ) по ID.
+    Если вопрос не найден, возвращает (None, None).
+    """
     data = r.hgetall(f"question:{q_id}")
     return data.get("question"), data.get("answer")

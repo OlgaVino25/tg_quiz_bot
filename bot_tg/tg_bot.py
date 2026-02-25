@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -20,14 +19,6 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-
-
-async def handle_user_message_with_error_handling(message, project_id):
-    """Для обработки исключений при обработке сообщений пользователя"""
-    try:
-        await tg_h.handle_user_message(message, project_id)
-    except Exception as err:
-        logger.exception("Ошибка в Telegram обработчике")
 
 
 async def main():

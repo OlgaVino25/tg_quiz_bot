@@ -79,54 +79,36 @@ sudo service redis-server start
 
 ## Загрузка вопросов в Redis
 
-В репозитории находится архив `questions.zip`, содержащий файл `questions.json` со всеми вопросами (около 156 МБ в распакованном виде).  
-Чтобы загрузить вопросы в Redis:
+В репозитории находится архив `quiz-questions.zip`, содержащий более 4000 исходных `.txt` файлов с вопросами. Чтобы загрузить их в Redis, выполните:
 
-1. Распакуйте архив:
+1. Распакуйте архив в папку `questions/`:
    - **Вручную** (через проводник или любой архиватор).
    - **Или командой** (для Linux/Mac/WSL):
      ```bash
-     unzip questions.zip
+     unzip quiz-questions.zip -d questions
      ```
    - **Для Windows (PowerShell)**:
      ```powershell
-     Expand-Archive -Path questions.zip -DestinationPath .
+     Expand-Archive -Path quiz-questions.zip -DestinationPath questions
      ```
 
 2. Убедитесь, что Redis запущен (см. раздел «Запуск Redis»).
 
-3. Выполните скрипт загрузки:
-   ```bash
-   python load_questions_to_redis.py
-   ```
+3. Запустите скрипт загрузки:
+
+```bash
+python load_questions.py
+```
+
+Скрипт прочитает все `.txt` файлы из папки `questions/` и загрузит вопросы в Redis.
 
 При успешной загрузке вы увидите сообщение:
+
 ```text
-Загружено 326929 вопросов. Последний ID: 326928
+Загружено 326929 вопросов в Redis.
 ```
 
 *Важно: Redis должен быть запущен перед выполнением скрипта. Если Redis работает на другом хосте/порте, измените переменные в `.env`.*
-
-## Работа с исходными файлами вопросов (опционально)
-
-В репозитории также доступен архив `quiz-questions.zip`, содержащий более 4000 исходных `.txt` файлов, из которых был создан `questions.json`.  
-Если вы хотите самостоятельно пересобрать базу вопросов (например, после редактирования), выполните следующие шаги:
-
-1. Распакуйте архив:
-   ```bash
-   unzip questions_txt.zip -d questions
-   ```
-   (создаст папку `questions/` с текстовыми файлами)
-
-2. Убедитесь, что у вас есть скрипт `generate_json.py` (он уже есть в репозитории).
-
-3. Запустите генерацию JSON:
-   ```bash
-   python generate_json.py
-   ```
-   Будет создан новый файл `questions.json`, который затем можно загрузить в Redis через `load_questions_to_redis.py`.
-
-**Примечание:** этот шаг необязателен. Для работы ботов достаточно готового `questions.json` из архива `questions.zip`.
 
 ## Запуск ботов
 
@@ -171,16 +153,13 @@ python bot_vk/vk_bot.py
 │   ├── vk_bot.py                 # точка входа
 │   └── vk_handlers.py            # обработчики
 ├── .gitignore
-├── load_questions_to_redis.py    # скрипт загрузки вопросов в Redis
-├── questions.zip                 # архив с базой вопросов
+├── load_questions.py             # скрипт загрузки вопросов в Redis
 ├── logger.py                     # настройка логирования с отправкой ошибок в Telegram
 ├── pyproject.toml                # зависимости проекта
 ├── redis_client.py               # клиент Redis с функциями доступа
 ├── settings.py                   # чтение переменных окружения
-├────────────────────────────────────────────────────────────────────────────────────────
-├── quiz-questions.zip            # архив с исходными .txt файлами (опционально)
-├── question.py                   # функция извлечения вопросов из .txt
-└── generate_json.py              # скрипт для создания questions.json из исходных .txt
+├── quiz-questions.zip            # архив с исходными .txt файлами
+└── question.py                   # функция извлечения вопросов из .txt
 ```
 
 ## Примечания

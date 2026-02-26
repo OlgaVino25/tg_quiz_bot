@@ -19,5 +19,5 @@ def get_question_by_id(q_id):
     """Возвращает кортеж (вопрос, ответ) по ID.
     Если вопрос не найден, возвращает (None, None).
     """
-    data = r.hgetall(f"question:{q_id}")
-    return data.get("question"), data.get("answer")
+    question_data = r.hgetall(f"question:{q_id}")
+    return question_data.get("question"), question_data.get("answer")

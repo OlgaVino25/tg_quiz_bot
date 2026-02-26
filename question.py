@@ -2,7 +2,7 @@ import os
 
 
 questions_dir = "questions"
-quiz_dict = {}
+quiz = {}
 
 
 def extract_questions_from_file(filepath):
@@ -67,13 +67,13 @@ for filename in os.listdir(questions_dir):
         try:
             pairs = extract_questions_from_file(filepath)
             for q, a in pairs:
-                quiz_dict[q] = a
+                quiz[q] = a
         except Exception as e:
             print(f"Ошибка при обработке файла {filename}: {e}")
 
-print(f"Загружено вопросов: {len(quiz_dict)}")
+print(f"Загружено вопросов: {len(quiz)}")
 
-for i, (q, a) in enumerate(list(quiz_dict.items())[:5]):
+for i, (q, a) in enumerate(list(quiz.items())[:5]):
     print(f"\n--- Вопрос {i+1} ---")
     print(f"Вопрос: {q}")
     print(f"Ответ: {a}")

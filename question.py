@@ -2,7 +2,6 @@ import os
 
 
 questions_dir = "questions"
-quiz = {}
 
 
 def extract_questions_from_file(filepath):
@@ -10,7 +9,7 @@ def extract_questions_from_file(filepath):
     with open(filepath, "r", encoding="KOI8-R") as f:
         lines = f.readlines()
 
-    questions = []
+    extracted_pairs = []
     current_question = []
     current_answer = []
     mode = None
@@ -20,7 +19,7 @@ def extract_questions_from_file(filepath):
 
         if stripped.startswith("Вопрос ") and ":" in stripped:
             if mode == "a" and current_question and current_answer:
-                questions.append(
+                extracted_pairs.append(
                     ("\n".join(current_question), "\n".join(current_answer))
                 )
                 current_question, current_answer = [], []
@@ -43,7 +42,7 @@ def extract_questions_from_file(filepath):
 
         elif stripped.startswith(("Автор:", "Источник:", "Комментарий:", "Зачет:")):
             if mode == "a" and current_question and current_answer:
-                questions.append(
+                extracted_pairs.append(
                     ("\n".join(current_question), "\n".join(current_answer))
                 )
                 current_question, current_answer = [], []
@@ -56,24 +55,32 @@ def extract_questions_from_file(filepath):
                 current_answer.append(stripped)
 
     if mode == "a" and current_question and current_answer:
-        questions.append(("\n".join(current_question), "\n".join(current_answer)))
+        extracted_pairs.append(("\n".join(current_question), "\n".join(current_answer)))
 
-    return questions
+    return extracted_pairs
 
 
-for filename in os.listdir(questions_dir):
-    if filename.endswith(".txt"):
-        filepath = os.path.join(questions_dir, filename)
-        try:
-            pairs = extract_questions_from_file(filepath)
-            for q, a in pairs:
-                quiz[q] = a
-        except Exception as e:
-            print(f"Ошибка при обработке файла {filename}: {e}")
+def main():
+    """Загружает вопросы из папки questions_dir и выводит статистику."""
+    quiz = {}
 
-print(f"Загружено вопросов: {len(quiz)}")
+    for filename in os.listdir(questions_dir):
+        if filename.endswith(".txt"):
+            filepath = os.path.join(questions_dir, filename)
+            try:
+                pairs = extract_questions_from_file(filepath)
+                for question, answer in pairs:
+                    quiz[question] = answer
+            except Exception as e:
+                print(f"Ошибка при обработке файла {filename}: {e}")
 
-for i, (q, a) in enumerate(list(quiz.items())[:5]):
-    print(f"\n--- Вопрос {i+1} ---")
-    print(f"Вопрос: {q}")
-    print(f"Ответ: {a}")
+    print(f"Загружено вопросов: {len(quiz)}")
+
+    for index, (question, answer) in enumerate(list(quiz.items())[:5]):
+        print(f"\n--- Вопрос {index+1} ---")
+        print(f"Вопрос: {question}")
+        print(f"Ответ: {answer}")
+
+
+if __name__ == "__main__":
+    main()

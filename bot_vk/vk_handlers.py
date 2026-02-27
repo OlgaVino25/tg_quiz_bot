@@ -1,16 +1,16 @@
 import sys
-from pathlib import Path
-
-BASE_DIR = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE_DIR))
-
 import logging
-import re
+
 from vk_api.utils import get_random_id
 
 from redis_client import r, get_random_question_id, get_question_by_id
 from bot_vk.keyboards import get_main_menu_keyboard
 from quiz_utils import normalize_answer
+
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(BASE_DIR))
 
 
 logger = logging.getLogger(__name__)
@@ -45,8 +45,8 @@ def handle_start(event, vk_api):
 def handle_new_question(event, vk_api):
     """Отправляет случайный вопрос пользователю и переводит в состояние ANSWERING."""
     user_id = event.user_id
-    q_id = get_random_question_id()
-    if not q_id:
+    question_id = get_random_question_id()
+    if not question_id:
         vk_api.messages.send(
             peer_id=event.peer_id,
             random_id=get_random_id(),
@@ -54,7 +54,7 @@ def handle_new_question(event, vk_api):
         )
         return
 
-    question_text, answer_text = get_question_by_id(q_id)
+    question_text, answer_text = get_question_by_id(question_id)
     if not question_text or not answer_text:
         vk_api.messages.send(
             peer_id=event.peer_id,
@@ -63,7 +63,7 @@ def handle_new_question(event, vk_api):
         )
         return
 
-    r.setex(f"vk_user:{user_id}:current_question_id", 3600, q_id)
+    r.setex(f"vk_user:{user_id}:current_question_id", 3600, question_id)
 
     set_state(user_id, VkStates.ANSWERING)
     vk_api.messages.send(
@@ -77,9 +77,9 @@ def handle_new_question(event, vk_api):
 def handle_give_up(event, vk_api):
     """Показывает правильный ответ на текущий вопрос и отправляет новый вопрос."""
     user_id = event.user_id
-    q_id = r.get(f"vk_user:{user_id}:current_question_id")
-    if q_id:
-        _, correct_answer = get_question_by_id(q_id)
+    question_id = r.get(f"vk_user:{user_id}:current_question_id")
+    if question_id:
+        _, correct_answer = get_question_by_id(question_id)
         vk_api.messages.send(
             peer_id=event.peer_id,
             random_id=get_random_id(),
@@ -117,8 +117,8 @@ def handle_my_account(event, vk_api):
 def handle_answer(event, vk_api):
     """Проверяет ответ пользователя, обновляет счёт и переводит в CHOOSING при правильном ответе."""
     user_id = event.user_id
-    q_id = r.get(f"vk_user:{user_id}:current_question_id")
-    if not q_id:
+    question_id = r.get(f"vk_user:{user_id}:current_question_id")
+    if not question_id:
         vk_api.messages.send(
             peer_id=event.peer_id,
             random_id=get_random_id(),
@@ -127,7 +127,7 @@ def handle_answer(event, vk_api):
         set_state(user_id, VkStates.CHOOSING)
         return
 
-    question_text, correct_answer_full = get_question_by_id(q_id)
+    question_text, correct_answer_full = get_question_by_id(question_id)
     if not correct_answer_full:
         vk_api.messages.send(
             peer_id=event.peer_id,

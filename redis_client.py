@@ -15,9 +15,9 @@ def get_random_question_id():
     return r.srandmember("question_ids")
 
 
-def get_question_by_id(q_id):
+def get_question_by_id(question_id):
     """Возвращает кортеж (вопрос, ответ) по ID.
     Если вопрос не найден, возвращает (None, None).
     """
-    question_data = r.hgetall(f"question:{q_id}")
+    question_data = r.hgetall(f"question:{question_id}")
     return question_data.get("question"), question_data.get("answer")

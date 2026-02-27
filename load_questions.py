@@ -1,6 +1,6 @@
 import os
 import redis
-from question import extract_questions_from_file
+from question_parser import extract_questions_from_file
 from settings import REDIS_HOST, REDIS_PORT, REDIS_DB
 
 
